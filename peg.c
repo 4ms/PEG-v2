@@ -26,6 +26,10 @@ THE SOFTWARE.
 See http://creativecommons.org/licenses/MIT/ for more information.
 */
 
+/* 
+ For use with PEG PCB v2.0 
+ (see peg_v1 project in github for PEG PCB 1.0.x)
+*/
 
 /*****************
  *  GLOBAL MODES *

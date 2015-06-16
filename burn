@@ -1,0 +1,2 @@
+avrdude -F -B 16 -P usb -c avrispmkII -p atmega328 -U hfuse:w:0xd9:m -U lfuse:w:0xd6:m -U efuse:w:0x04:m 
+avrdude -F -B 0.5 -P usb -c avrispmkII -p atmega328 -U flash:w:peg.hex

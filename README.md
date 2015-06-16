@@ -1,5 +1,7 @@
 Pingable Envelope Generator
 Eurorack module. 
+For PCB versions 2.0.x
+
 The following source code is for an ATMEGA328 AVR chip. The PEG is a dual envelope generator and requires two ATMEGA328 chips, each running the same firmware.
 For more information: http://4mspedals.com/peg.php
 

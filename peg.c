@@ -1,7 +1,49 @@
+/*
+Copyright (c) 2015 4ms Company
+
+Author: Dan Green - danngreen1@gmail.com
+
+LICENSE:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+See http://creativecommons.org/licenses/MIT/ for more information.
+*/
+
+
+/*****************
+ *  GLOBAL MODES *
+ *****************/
+
+//Enable to save code space by skipping the log lookup table. Useful for compiling with no optimization when using the debugger.
 //#define OMITLOGCURVES
+
+//Enables the UART, for communication with a PEG parameter controller
 #define ENABLE_UART
 
 #define F_CPU 16000000
+
+
+/*****************
+ *  INCLUDES     *
+ *****************/
+
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -10,13 +52,6 @@
 #include <avr/eeprom.h>
 #include "uart.h"
 
-FUSES =
-{
-	.extended = 0x04, /*BOD 4.3V*/
-	.high = 0xd9, /*d1 to preserve EEPROM*/
-	.low = 0xd6  /*or 0xce*/
-};
-
 #include "timer.h"
 #include "dac_mcp4921.h"
 
@@ -24,8 +59,19 @@ FUSES =
 	#include "log4096.h"
 #endif
 
+FUSES =
+{
+	.extended = 0x04, /*BOD 4.3V*/
+	.high = 0xd9, /*d1 to preserve EEPROM*/
+	.low = 0xd6  /*or 0xce*/
+};
 
 
+/*************************
+ *  GLOBAL VARIABLES     *
+ *************************/
+
+//udiv32() is located in the div32.S file
 extern uint32_t udiv32(uint32_t divisor);
 
 extern volatile uint32_t tapintmr;
@@ -35,23 +81,21 @@ extern volatile uint32_t eo1tmr;
 extern volatile uint32_t eo2tmr;
 
 
-
 volatile uint32_t ping_irq_timestamp=0, trigq_irq_timestamp=0;
 volatile char reset_nextping_flag=0;
 volatile char sync_to_ping_mode=1;
 volatile uint8_t trigq_jack_down=0;
 volatile char using_tap_clock=0;
+volatile char timer_overflowed=0;
 
 char eo1_high=0,eo2_high=0;
 
 
-
-/********************
- * GLOBAL VARIABLES *
- ********************/
+/***************
+ *   SETTINGS  *
+ ***************/
 
 //3000000 is about 1.25s
-//
 #define HOLDTIMECLEAR 4800000
 
 #define SKEW_ADC_DRIFT 1
@@ -62,15 +106,13 @@ char eo1_high=0,eo2_high=0;
 //12000 is 5ms
 #define LIMIT_SKEW_TIME 15000
 
-
 //10 is about 100ms
 #define NUM_ADC_CYCLES_BEFORE_TRANSITION 10
 
 #define DIV_ADC_HYSTERESIS 1
 
-
-//SYSTEM_MODE_HOLD_TIME seems to depend on HOLDTIMECLEAR
-//with HOLDTIMECLEAR 4800000:
+//SYSTEM_MODE_HOLD_TIME: how long the ping button must be held down to enter System Mode
+//with HOLDTIMECLEAR at 4800000:
 	//200000 is about 5s
 	//150000 is about 3.75s
 	//103000 is about 2.5
@@ -110,7 +152,6 @@ char eo1_high=0,eo2_high=0;
 #define REPLY_HI_I_AM_PINGING		0b11000100
 
 
-
 /*******************
  *   EEPROM        *
  *******************/
@@ -137,12 +178,8 @@ char LIMIT_SKEW=0;
 char ROLLOFF_PING=1;
 char ASYNC_CAN_SUSTAIN=1;
 
-/* The following aren't EEPROM... yet(?) */
-
-//if QNT_REPHASES_WHEN_CYCLE_OFF 0 then QNT only rephases when cycle is on
-//if QNT_REPHASES_WHEN_CYCLE_OFF 1 then QNT always rephases
+//The following are not user modifiable, change at your own risk!
 #define QNT_REPHASES_WHEN_CYCLE_OFF 0
-
 #define CYCLE_REPHASES_DIV_PING 1 
 
 
@@ -264,11 +301,21 @@ char ASYNC_CAN_SUSTAIN=1;
 char BLUE_DETECT=0;
 
 
-volatile uint16_t dacbuf[4]={0,0,0,0};
-volatile uint8_t dacbuf_rd=0;
-volatile uint8_t dacbuf_wr=2;
+/**************
+ *  FUNCTIONS *
+ **************/
 
-volatile char timer_overflowed=0;
+uint8_t diff(uint8_t a, uint8_t b);
+inline uint8_t diff(uint8_t a, uint8_t b){
+	if (a>b) return (a-b);
+	else return (b-a);
+}
+
+uint32_t diff32(uint32_t a, uint32_t b);
+inline uint32_t diff32(uint32_t a, uint32_t b){
+	if (a>b) return (a-b);
+	else return(b-a);
+}
 
 void init_spi(void){
 	
@@ -282,22 +329,6 @@ void init_spi(void){
 	SPSR = (1<<SPI2X); //SPI double speed = 2MHz
 
 	output_dac(0);
-}
-
-
-
-
-
-uint8_t diff(uint8_t a, uint8_t b);
-inline uint8_t diff(uint8_t a, uint8_t b){
-	if (a>b) return (a-b);
-	else return (b-a);
-}
-
-uint32_t diff32(uint32_t a, uint32_t b);
-inline uint32_t diff32(uint32_t a, uint32_t b){
-	if (a>b) return (a-b);
-	else return(b-a);
 }
 
 void init_pins(void){
@@ -513,15 +544,12 @@ void init_adc(void){
 
 /*
 TIMERS:
-TCNT0 increments every 0.4us
-overflows every 102.5us
+TCNT0 increments every 0.5us at 16MHz
+overflows every 128us
 
-So a timer value is expressed in 0.4us.
-e.g. if get_pingtmr() returns 10000, we are 4ms
+So a timer value is expressed in 0.5us
+e.g. if get_pingtmr() returns 8000, that's 4ms
 
-1000 400uS 2.5kHz
-10000 4ms 250Hz
-15000 6ms 116Hz
 */
 
 ISR (INT0_vect){

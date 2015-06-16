@@ -1,8 +1,38 @@
+/*
+Copyright (c) 2015 4ms Company
+
+Author: Dan Green - danngreen1@gmail.com
+
+LICENSE:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+See http://creativecommons.org/licenses/MIT/ for more information.
+*/
+
+
+
+
 #include <stdarg.h>
 #include <ctype.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
 
 #include "uart.h"
 
@@ -19,13 +49,12 @@ void init_uart(uint16_t ubbr){
 	UCSR0A=0x00;
 	UCSR0B=/*(1<<TXEN0) |*/ (1<<RXEN0) | (1<<RXCIE0); 	//enable RX and interrupt for RX
 
-    //asynchronous 8N1  (8-bit character, no parity, 1 stop bit)
-    UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
+	//asynchronous 8N1  (8-bit character, no parity, 1 stop bit)
+	UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
 
-//    DDRD |= (1<<PD1); //TXD output
 	DDRD &= ~(1<<PD1);	//disable TX at first
 
-    DDRD &= ~(1<<PD0); //RXD input
+	DDRD &= ~(1<<PD0); 	//RXD input
 
 }
 

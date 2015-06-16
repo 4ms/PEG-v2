@@ -1,15 +1,9 @@
 
-;To do: optimize for a set divisor value (?)
-
-
 ;************************************************************************
 ;*                                                                      *
 ;*                      divide 2^31 by a 27-bit number                  *
-
 ;*  0x8000 0000 0000 0000 / (divisor32 >> 5) 
-
 ;*  0x8000 0000 0000 0000 / 0x0000 0nnn nnnn nnnn
-
 ;*                                                                      *
 ;************************************************************************
  
@@ -58,8 +52,8 @@ udiv32:
 
 ;	ldi r16, 0x00
 ;	mov r15, r16
-				;load 0x8800 0000 0000 0000 into r16:r15:r14:r13 = 2^36 times a 6.25% factor
-	ldi r16, 0x80	;must be regisiter r16 to r31 80 lags a lot, 82 leads/lags a tiny bit, 83 leads a bit
+				
+	ldi r16, 0x80	;must be regisiter r16 to r31 
 	clr r15
 	clr r14
 	clr r13

@@ -1,4 +1,8 @@
-/*
+Pingable Envelope Generator
+Eurorack module. 
+The following source code is for an ATMEGA328 AVR chip. The PEG is a dual envelope generator and requires two ATMEGA328 chips, each running the same firmware.
+For more information: http://4mspedals.com/peg.php
+
 Copyright (c) 2015 4ms Company
 
 Author: Dan Green - danngreen1@gmail.com
@@ -24,30 +28,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 See http://creativecommons.org/licenses/MIT/ for more information.
-*/
-
-#ifndef TIMER_H_
-#define TIMER_H_
-
-#define MINTIME 1
-#define TMROFFSET 0
-
-
-void inittimer(void);
-uint32_t gettmrms(void);
-
-uint32_t get_tapouttmr(void);
-uint32_t get_tapintmr(void);
-uint32_t get_pingtmr(void);
-uint32_t get_divpingtmr(void);
-uint32_t get_eo1tmr(void);
-uint32_t get_eo2tmr(void);
-
-void reset_tapouttmr(void);
-void reset_tapintmr(void);
-void reset_pingtmr(void);
-void reset_divpingtmr(void);
-void reset_eo1tmr(void);
-void reset_eo2tmr(void);
-
-#endif /* TIMER_H_ */

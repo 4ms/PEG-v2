@@ -1,0 +1,1 @@
+avrdude -F -B 0.5 -P usb -c avrispmkII -p atmega328 -U flash:w:peg.hex

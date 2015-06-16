@@ -1,3 +1,30 @@
+/*
+Copyright (c) 2015 4ms Company
+
+Author: Dan Green - danngreen1@gmail.com
+
+LICENSE:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+See http://creativecommons.org/licenses/MIT/ for more information.
+*/
 
 #include <stdarg.h>
 #include <ctype.h>
@@ -12,17 +39,7 @@ volatile uint32_t pingtmr;
 volatile uint32_t divpingtmr;
 volatile uint32_t eo1tmr;
 volatile uint32_t eo2tmr;
-
-
-
-
 extern volatile char timer_overflowed;
-
-extern volatile uint16_t dacbuf[4];
-extern volatile uint8_t dacbuf_rd;
-extern volatile uint8_t dacbuf_wr;
-
-
 
 //takes 1.56uS = 25 clocks
 SIGNAL (TIMER0_OVF_vect){
@@ -125,8 +142,6 @@ void reset_eo2tmr(void){
 
 
 void inittimer(void){
-
-
 	//Fast PWM , TOP at 0xFF, OC0 disconnected, Prescale @ FCK/8
 	TCCR0A=(1<<WGM01) | (1<<WGM00) | (0<<COM0A0) | (0<<COM0A1);
 	TCCR0B= (0<<WGM02) | (0<<CS00) | (1<<CS01) | (0<<CS02);
@@ -140,11 +155,7 @@ void inittimer(void){
 	sei();
 
 /*
-prescale / 64 makes 800us steps (1.25kHz aliasing == audible, no good!)
-
-prescale= /8 @ 20MHz => TCNT0/tmrms/now inc's +1 every 0.4us
-with uint32_t tmrms, max time is about 1718s or 28.6 minutes
-A glitch occurs when tmrms overflows, so this is not long enough (need at least 24 hours, preferrably 720 hours = a month)
-
+prescale= /8 @ 16MHz => TCNT0/tmrms/now inc's +1 every 0.5us
+with uint32_t tmrms, max time is about 1374s or 23min
 */
 }

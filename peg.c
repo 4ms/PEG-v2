@@ -271,10 +271,11 @@ char ASYNC_CAN_SUSTAIN=1;
 
 #define EO_init DDRD |= (1<<EO1_pin) | (1<<EO2_pin)
 
-#define CHANNEL_ID_OUT_pin PB0
-#define CHANNEL_ID_OUT_init DDRB |= (1 << CHANNEL_ID_OUT_pin)
-#define CHANNEL_ID_OUT_ON PORTB |= (1 << CHANNEL_ID_OUT_pin)
-#define CHANNEL_ID_OUT_OFF PORTB &= ~(1 << CHANNEL_ID_OUT_pin)
+
+#define CHANNEL_ID_OUT_pin PC0
+#define CHANNEL_ID_OUT_init DDRC |= (1 << CHANNEL_ID_OUT_pin)
+#define CHANNEL_ID_OUT_ON PORTC |= (1 << CHANNEL_ID_OUT_pin)
+#define CHANNEL_ID_OUT_OFF PORTC &= ~(1 << CHANNEL_ID_OUT_pin)
 
 #define TAPIN_pin PD7
 #define TAPIN_init DDRD &= ~(1<<TAPIN_pin); \
@@ -302,6 +303,7 @@ char ASYNC_CAN_SUSTAIN=1;
 
 #define BLUE_DETECT_PIN PB0
 #define READ_BLUE_DETECT (PINB & (1<<BLUE_DETECT_PIN))
+#define BLUE_DETECT_init DDRD &= ~(1<<BLUE_DETECT_PIN)
 char BLUE_DETECT=0;
 
 
@@ -344,6 +346,7 @@ void init_pins(void){
 	CYCLE_BUT_init;
 	CYCLE_LED_init;
 	TAPIN_init;
+	BLUE_DETECT_init ;
 	CHANNEL_ID_OUT_init;
 	PINGLED_init;
 	CYCLE_INVERT_init;
